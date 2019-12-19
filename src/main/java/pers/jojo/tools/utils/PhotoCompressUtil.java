@@ -1,4 +1,4 @@
-package pers.jojo.tools;
+package pers.jojo.tools.utils;
 
 import org.springframework.util.Base64Utils;
 import org.apache.commons.io.IOUtils;
@@ -26,7 +26,7 @@ public class PhotoCompressUtil {
      */
     public static String compressPhoto(String base64Image, double targetSize, double minSize, double maxSize) {
         if (targetSize < minSize || targetSize > maxSize) {
-            throw new Error("参数错误！");
+            return null;
         }
         try {
             //base64转IS
@@ -54,61 +54,63 @@ public class PhotoCompressUtil {
                 count++;
             } while ((imageSize < minSize || imageSize > maxSize) && count < countMax);
             if (count >= countMax) {
-                throw new Error("图片压缩失败！");
+                return null;
             }
             return Base64Utils.encodeToString(((ByteArrayOutputStream) output).toByteArray());
         } catch (Exception e) {
-            throw new Error("图片压缩失败！");
+            e.printStackTrace();
+            return null;
         }
     }
 
-    private static void resize(InputStream input, OutputStream output, int width, int height, int maxWidth, int maxHeight) throws Exception {
+    public static void resize(InputStream input, OutputStream output, int width, int height, int maxWidth, int maxHeight) throws Exception {
         if (width < 1 && height < 1 && maxWidth < 1 && maxHeight < 1) {
             try {
                 IOUtils.copy(input, output);
-            } catch (IOException var22) {
-                throw new Exception("resize error: ", var22);
+            } catch (IOException e) {
+                throw new Exception("resize error: ", e);
             }
         }
         try {
             BufferedImage img = ImageIO.read(input);
             boolean hasNotAlpha = !img.getColorModel().hasAlpha();
-            double w = (double) img.getWidth(null);
-            double h = (double) img.getHeight(null);
-            double rate = w / h;
+            double w = img.getWidth(null);
+            double h = img.getHeight(null);
             int toWidth;
             int toHeight;
+            double rate = w / h;
             if (width > 0 && height > 0) {
-                rate = (double) width / (double) height;
+                rate = ((double) width) / ((double) height);
                 toWidth = width;
                 toHeight = height;
             } else if (width > 0) {
                 toWidth = width;
-                toHeight = (int) ((double) width / rate);
+                toHeight = (int) (toWidth / rate);
             } else if (height > 0) {
                 toHeight = height;
-                toWidth = (int) ((double) height * rate);
+                toWidth = (int) (toHeight * rate);
             } else {
-                toWidth = Double.valueOf(w).intValue();
-                toHeight = Double.valueOf(h).intValue();
+                toWidth = ((Number) w).intValue();
+                toHeight = ((Number) h).intValue();
             }
             if (maxWidth > 0 && toWidth > maxWidth) {
                 toWidth = maxWidth;
-                toHeight = (int) ((double) maxWidth / rate);
+                toHeight = (int) (toWidth / rate);
             }
             if (maxHeight > 0 && toHeight > maxHeight) {
                 toHeight = maxHeight;
-                toWidth = (int) ((double) maxHeight * rate);
+                toWidth = (int) (toHeight * rate);
             }
-            BufferedImage tag = new BufferedImage(toWidth, toHeight, hasNotAlpha ? 1 : 2);
+            BufferedImage tag = new BufferedImage(toWidth, toHeight, hasNotAlpha ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB);
+            // Image.SCALE_SMOOTH 的缩略算法 生成缩略图片的平滑度的 优先级比速度高 生成的图片质量比较好 但速度慢
             Graphics2D graphics2d = (Graphics2D) tag.getGraphics();
             graphics2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             graphics2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
             graphics2d.drawImage(img, 0, 0, toWidth, toHeight, null);
             ImageIO.write(tag, hasNotAlpha ? "jpg" : "png", output);
-        } catch (Exception var23) {
-            var23.printStackTrace();
-            throw new Exception(var23);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e);
         } finally {
             input.close();
             output.close();
