@@ -3,13 +3,13 @@ package pers.jojo.tools.utils;
 import java.io.*;
 
 /**
- * @ClassName FormatTransform
+ * @ClassName FormatTransformUtil
  * @Description
  * @Author 张淳
  * @Date 2019/12/19 13:52
  * @Version 1.0.0
  **/
-public class FormatTransform {
+public class FormatTransformUtil {
 
     /**
      * File转byte

@@ -12,13 +12,13 @@ import java.util.Base64;
 import java.util.List;
 
 /**
- * @ClassName PdfUtils
+ * @ClassName PdfUtil
  * @Description
  * @Author 张淳
  * @Date 2019/12/19 10:27
  * @Version 1.0.0
  **/
-public class PdfUtils {
+public class PdfUtil {
     /**
      * 将PDF按页数每页转换成一个jpg图片
      *
