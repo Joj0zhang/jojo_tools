@@ -38,7 +38,7 @@ public class WeChatPayUtil {
         sb.append("key=" + key);
         //System.out.println("签名字符串:" + sb.toString());
 //        return string2MD5(sb.toString()).toUpperCase();
-        return sha256_HMAC(sb.toString(),key).toUpperCase();
+        return sha256_HMAC(sb.toString(), key).toUpperCase();
     }
 
     public static String string2MD5(String inStr) {
@@ -53,14 +53,16 @@ public class WeChatPayUtil {
         char[] charArray = inStr.toCharArray();
         byte[] byteArray = new byte[charArray.length];
 
-        for (int i = 0; i < charArray.length; i++)
+        for (int i = 0; i < charArray.length; i++) {
             byteArray[i] = (byte) charArray[i];
+        }
         byte[] md5Bytes = md5.digest(byteArray);
         StringBuffer hexValue = new StringBuffer();
         for (int i = 0; i < md5Bytes.length; i++) {
             int val = ((int) md5Bytes[i]) & 0xff;
-            if (val < 16)
+            if (val < 16) {
                 hexValue.append("0");
+            }
             hexValue.append(Integer.toHexString(val));
         }
         return hexValue.toString();
@@ -102,6 +104,7 @@ public class WeChatPayUtil {
 
     /**
      * sha256_HMAC加密
+     *
      * @param message 消息
      * @param secret  秘钥
      * @return 加密后字符串
@@ -126,13 +129,14 @@ public class WeChatPayUtil {
      * @param b 字节数组
      * @return 字符串
      */
-    public  static String byteArrayToHexString(byte[] b) {
+    public static String byteArrayToHexString(byte[] b) {
         StringBuilder hs = new StringBuilder();
         String stmp;
-        for (int n = 0; b!=null && n < b.length; n++) {
+        for (int n = 0; b != null && n < b.length; n++) {
             stmp = Integer.toHexString(b[n] & 0XFF);
-            if (stmp.length() == 1)
+            if (stmp.length() == 1) {
                 hs.append('0');
+            }
             hs.append(stmp);
         }
         return hs.toString().toLowerCase();

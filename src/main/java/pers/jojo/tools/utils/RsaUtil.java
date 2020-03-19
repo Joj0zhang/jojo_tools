@@ -11,6 +11,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @ClassName RsaUtil
@@ -98,32 +100,46 @@ public class RsaUtil {
      * @return
      * @throws Exception
      */
-    public static String encodeWithPublicKey(String content, String encodedPublicKey) throws Exception {
+    public static List<String> encodeWithPublicKey(String content, String encodedPublicKey) throws Exception {
+        //防止信息过长，对信息进行切割之后再加密
+        List<String> contentList = new ArrayList<>();
+        while (content.length() > 0) {
+            contentList.add(content.substring(0, Math.min(content.length(), 20)));
+            content = content.substring(Math.min(content.length(), 20));
+        }
         //还原公钥
         byte[] decoded = Base64.decode(encodedPublicKey);
         RSAPublicKey publicKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
         //RSA加密
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return Base64.encode(cipher.doFinal(content.getBytes("UTF-8")));
+        List<String> result = new ArrayList<>();
+        for (String s : contentList) {
+            result.add(Base64.encode(cipher.doFinal(s.getBytes("UTF-8"))));
+        }
+        return result;
     }
 
     /**
      * 用私钥对信息进行解密
      *
-     * @param content           需要解密的信息
+     * @param contentList       需要解密的信息
      * @param encodedPrivateKey Base64编码后的私钥
      * @return
      * @throws Exception
      */
-    public static String decodeWithPrivateKey(String content, String encodedPrivateKey) throws Exception {
+    public static String decodeWithPrivateKey(List<String> contentList, String encodedPrivateKey) throws Exception {
         //还原私钥
         byte[] decoded = Base64.decode(encodedPrivateKey);
         RSAPrivateKey privateKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
         //RSA解密
-        byte[] inputByte = Base64.decode(content);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return new String(cipher.doFinal(inputByte));
+        StringBuffer sb = new StringBuffer();
+        for (String s : contentList) {
+            byte[] inputByte = Base64.decode(s);
+            sb.append(new String(cipher.doFinal(inputByte)));
+        }
+        return sb.toString();
     }
 }
